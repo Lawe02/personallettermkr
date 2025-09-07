@@ -1,14 +1,15 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using webApp.Model;
 
 namespace webApp.Data
 {
     public class DataInitializer
     {
         private readonly ApplicationDbContext _dbContext;
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public DataInitializer(ApplicationDbContext context, UserManager<IdentityUser> manager)
+        public DataInitializer(ApplicationDbContext context, UserManager<ApplicationUser> manager)
         {
             _dbContext = context;
             _userManager = manager;
@@ -22,9 +23,15 @@ namespace webApp.Data
 
         private void AddUserIfNotExists(string userName, string password)
         {
-            if (_userManager.FindByEmailAsync(userName).Result != null) return;
 
-            var user = new IdentityUser
+            var normalizedUserName = userName.ToUpper();
+
+            if (_dbContext.Users.Any(u => u.NormalizedUserName == normalizedUserName))
+            {
+                return; // user already exists
+            }
+
+            var user = new ApplicationUser
             {
                 UserName = userName,
                 Email = userName,
